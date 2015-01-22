@@ -28,6 +28,8 @@ class Locker
   end
 
   def unlock_all(project, env)
+    p project
+    p env
     key_pattern = [project, env].map { |v| v || '*'  }.join('::')
     redis.del key_pattern
   end
