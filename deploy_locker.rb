@@ -12,7 +12,6 @@ config = YAML.load_file('./redis.yml')
   end
 end
 
-
 configure :production do
   require 'uri'
   uri = URI.parse ENV['REDISTOGO_URL']
