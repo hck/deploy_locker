@@ -3,12 +3,20 @@ require 'redis'
 require 'yaml'
 require './lib/locker'
 
-%i(development production test).each do |environment|
-  config = YAML.load_file('./redis.yml')
+config = YAML.load_file('./redis.yml')
 
-  configure environment do
+%i(development test).each do |environment|
+  configure :development, :test do
+    enable :logging
     $redis = Redis.new config[environment.to_s]
   end
+end
+
+
+configure :production do
+  require 'uri'
+  uri = URI.parse ENV['REDISTOGO_URL']
+  $redis = Redis.new host: uri.host, port: uri.port, password: uri.password
 end
 
 put '/lock' do
@@ -30,7 +38,7 @@ delete '/lock' do
 end
 
 delete '/unlock_all' do
-  locker.unlock_all *params.values_at(:project, :env, :username)
+  locker.unlock_all *params.values_at(:project, :env)
   'ok'
 end
 
