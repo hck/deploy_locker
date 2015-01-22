@@ -11,10 +11,6 @@ require './lib/locker'
   end
 end
 
-get '/' do
-  'Hello'
-end
-
 put '/lock' do
   begin
     locker.lock *params.values_at(:project, :env, :username)
