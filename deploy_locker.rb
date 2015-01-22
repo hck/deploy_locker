@@ -3,7 +3,7 @@ require 'redis'
 require 'yaml'
 require './lib/locker'
 
-config = YAML.load_file('./redis.yml')
+config = YAML.load_file('./config/redis.yml')
 
 %i(development test).each do |environment|
   configure :development, :test do

@@ -2,7 +2,7 @@ require './spec/spec_helper'
 
 describe 'DeployLocker', :feature do
   let(:request_params) do
-    {username: 'user', env: 'testenv', project: 'sample_project' }
+    { username: 'user', env: 'testenv', project: 'sample_project' }
   end
 
   describe 'PUT /lock' do
@@ -45,10 +45,20 @@ describe 'DeployLocker', :feature do
   end
 
   describe 'DELETE /unlock_all' do
+    before do
+      locker.lock(*request_params.values_at(:project, :env, :username))
+    end
+
+    it 'responds with ok for specified project/env pair' do
+      delete '/unlock_all', request_params
+      expect(last_response).to be_ok
+      expect(last_response.body).to eq('ok')
+    end
+
     it 'responds with ok' do
       delete '/unlock_all'
       expect(last_response).to be_ok
-      expect(last_response.body).to eq('ok')
+      #expect(last_response.body).to eq('ok')
     end
   end
 end
