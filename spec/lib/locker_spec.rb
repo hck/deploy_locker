@@ -1,8 +1,9 @@
 require './spec/spec_helper'
 
 describe Locker do
-  subject { described_class.new($redis) }
+  subject { described_class.new($redis, slack) }
 
+  let(:slack) { double(:slack).tap { |o| allow(o).to receive(:notify).with(any_args) } }
   let(:env) { 'test_env' }
   let(:project) { 'sample_project' }
   let(:username) { 'user1' }

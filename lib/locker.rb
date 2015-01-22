@@ -1,6 +1,7 @@
 class Locker
-  def initialize(redis)
+  def initialize(redis, slack)
     @redis = redis
+    @slack = slack
   end
 
   def lock(project, env, username)
@@ -10,6 +11,7 @@ class Locker
     end
 
     redis.set(key, username)
+    slack.notify(":no_entry: Lock: #{project}:#{env} by #{username}")
   end
 
   def unlock(project, env, username)
@@ -25,18 +27,18 @@ class Locker
     end
 
     redis.del(key)
+    slack.notify(":white_check_mark: Unlock: #{project}:#{env} by #{username}")
   end
 
   def unlock_all(project, env)
     key_pattern = [project, env].map { |v| v || '*'  }.join('::')
     keys = redis.keys(key_pattern)
     redis.del keys unless keys.empty?
+    slack.notify(":white_check_mark: Unlocked all: #{project}:#{env}")
   end
 
   private
-  def redis
-    @redis
-  end
+  attr_reader :redis, :slack
 
   def key(project, env)
     [project, env].join('::')

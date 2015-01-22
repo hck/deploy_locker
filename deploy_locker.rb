@@ -1,15 +1,26 @@
 require 'sinatra'
 require 'redis'
 require 'yaml'
+require 'slack-notify'
 require './lib/locker'
 
-config = YAML.load_file('./config/redis.yml')
+redis_config = YAML.load_file('./config/redis.yml')
 
 %i(development test).each do |environment|
   configure :development, :test do
     enable :logging
-    $redis = Redis.new config[environment.to_s]
+    $redis = Redis.new redis_config[environment.to_s]
   end
+end
+
+configure :development, :production do
+  $slack = SlackNotify::Client.new(
+    webhook_url: ENV['SLACK_WEBHOOK_URL'],
+    channel: 'test-deploy-locker',
+    user: 'alexsvirin',
+    icon_emoji: ":shipit:",
+    link_names: 1
+  )
 end
 
 configure :production do
@@ -44,5 +55,5 @@ end
 private
 
 def locker
-  @locker ||= Locker.new($redis)
+  @locker ||= Locker.new($redis, $slack)
 end

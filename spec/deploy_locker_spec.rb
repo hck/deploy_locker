@@ -5,6 +5,8 @@ describe 'DeployLocker', :feature do
     { username: 'user', env: 'testenv', project: 'sample_project' }
   end
 
+  before { allow($slack).to receive(:notify) }
+
   describe 'PUT /lock' do
     it 'responds with ok' do
       put '/lock', request_params
@@ -58,7 +60,7 @@ describe 'DeployLocker', :feature do
     it 'responds with ok' do
       delete '/unlock_all'
       expect(last_response).to be_ok
-      #expect(last_response.body).to eq('ok')
+      expect(last_response.body).to eq('ok')
     end
   end
 end
