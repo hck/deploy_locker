@@ -1,0 +1,4 @@
+.idea
+redis.yml
+dump.rdb
+*.swp
