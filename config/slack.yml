@@ -1,0 +1,17 @@
+default: &default
+  :webhook_url: 'http://someurl.com'
+  :channel: test-deploy-locker
+  :username: alexsvirin
+  :icon_emoji: ":shipit:"
+  :link_names: 1
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+  :channel: test-channel
+  :username: test-user
+
+production:
+  <<: *default

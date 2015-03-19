@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+# Unlock All script #
+#####################
+
+require 'colorize'
+
+require 'optparse'
+require 'ostruct'
+def self.parse(args)
+  options = OpenStruct.new
+  opts = OptionParser.new do |opts|
+    opts.banner = 'Usage: unlock_all [options]'
+    opts.separator ''
+    opts.separator 'Specific options:'
+
+    opts.on(
+      '-e',
+      '--env ENVIRONMENT',
+      'Specify environment, either staging or production'
+    ) do |e|
+      options.env = e
+    end
+
+    opts.on(
+      '-p',
+      '--project PROJECT_NAME',
+      'Specify project name, e.g.: BRE'
+    ) do |p|
+      options.project = p
+    end
+
+    opts.on(
+      '-v',
+      '--verbose',
+      'verbose'
+    ) do |v|
+      options.verbose = true
+    end
+  end
+
+  opts.parse!(args)
+  options
+end
+
+config = parse(ARGV)
+
+if config.verbose
+  puts "Config:"
+  p config
+end
+
+# Extract variables
+host = 'deploylocker.herokuapp.com'
+
+path = "/unlock_all"
+path += "?env=#{config.env}" if config.env
+path += "&project=#{config.project}" if config.project
+
+puts path if config.verbose
+
+# Make request
+require 'net/http'
+req = Net::HTTP::Delete.new(path, initheader = { 'Content-Type' => 'text/plain'})
+req.body = "whatever"
+response = Net::HTTP.new(host).start {|http| http.request(req) }
+
+p response if config.verbose
+
+# Parse response
+if response.body == 'ok'
+  puts "Unlocked all #{config.env} #{config.project}".green
+  exit 0
+else
+  puts response.body.red
+  exit 4
+end

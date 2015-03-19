@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+# Unlock script #
+###############
+
+require 'colorize'
+
+# Validate arguments
+if ARGV.size != 1
+  puts 'Please specify only environment - staging or production. Example: deploy_unlock staging'.yellow
+  exit 1
+end
+
+# Extract variables
+host = 'deploylocker.herokuapp.com'
+
+env = ARGV[0]
+
+username = `git config --get user.name`.strip.gsub(" ", "_")
+if username.nil? || username.empty?
+  puts 'Could not find username on git config'.yellow
+  exit 2
+end
+
+project_name = /(?<project>[a-zA-Z_\d]+)\.git/.match((`git remote -v`).split('\n')[0])[:project].upcase
+if project_name.nil? || project_name.empty?
+  puts 'Could not find project name. Please verify that \'git remote -v\' has values'.yellow
+  exit 3
+end
+
+path = "/lock?env=#{env}&project=#{project_name}&username=#{username}"
+
+puts path
+
+# Make request
+require 'net/http'
+req = Net::HTTP::Delete.new(path, initheader = { 'Content-Type' => 'text/plain'})
+req.body = "whatever"
+response = Net::HTTP.new(host).start {|http| http.request(req) }
+
+# Parse response
+if response.body == 'ok'
+  puts "Unlocked #{env} #{project_name} for #{username}".green
+  exit 0
+else
+  puts response.body.red
+  exit 4
+end
